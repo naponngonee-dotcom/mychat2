@@ -195,6 +195,17 @@
       color: #fff; padding: 10px; border-radius: 6px; font-size: 14px;
     }
 
+    /* ★プロンプト＆メモリ入力欄の自動拡大（フォーカス時）★ */
+    .expandable-textarea {
+      min-height: 90px;
+      transition: min-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
+    }
+    .expandable-textarea:focus {
+      min-height: 250px; /* タップして入力中だけ画面の縦いっぱいに広がるわ！ */
+      border-color: var(--accent) !important;
+      outline: none;
+    }
+
     /* トーク一覧リスト */
     .session-item {
       display: flex;
@@ -274,11 +285,11 @@
       <label>キャラ表示名</label>
       <input type="text" id="sessionName" placeholder="例：ツンデレ幼馴染">
 
-      <label>System Instructions (きゃらぷ＋メタルール)</label>
-      <textarea id="systemPrompt" rows="5" placeholder="プロンプトを入力"></textarea>
+      <label>System Instructions (きゃらぷ＋メタルール) <span style="font-size:10px; color:var(--accent);">※タップで大きく開くわ！</span></label>
+      <textarea id="systemPrompt" class="expandable-textarea" placeholder="プロンプトを入力"></textarea>
 
-      <label>永続記憶（メモリ枠・過去の概要など）</label>
-      <textarea id="memoryPrompt" rows="3" placeholder="記憶ノートを入力"></textarea>
+      <label>永続記憶（メモリ枠・過去の概要など） <span style="font-size:10px; color:var(--accent);">※タップで大きく開くわ！</span></label>
+      <textarea id="memoryPrompt" class="expandable-textarea" placeholder="記憶ノートを入力"></textarea>
 
       <div style="display:flex; gap:8px;">
         <button onclick="saveCurrentSettings()" style="flex:1; background:var(--accent);color:#fff;padding:10px;border:none;border-radius:6px;">保存</button>
