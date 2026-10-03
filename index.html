@@ -12,9 +12,11 @@
       --bg-input: #1e1e1e;
       --msg-user: #1f65d6;
       --msg-ai: #2a2d32;
+      --msg-error: #3a1c1c;
       --text-main: #e1e1e1;
       --text-muted: #8e8e93;
       --accent: #3b82f6;
+      --danger: #ef4444;
       --border-color: #2c2c2e;
     }
 
@@ -40,7 +42,6 @@
       position: relative;
     }
 
-    /* ヘッダー */
     .header {
       background-color: var(--bg-header);
       padding: 12px 16px;
@@ -60,7 +61,6 @@
     .header-status { font-size: 11px; color: #10b981; transition: color 0.3s; }
     .header-status.typing { color: #f59e0b; }
 
-    /* クイックアクションバー */
     .action-bar {
       background-color: #161a23;
       padding: 8px 12px;
@@ -85,7 +85,6 @@
       border-color: rgba(59, 130, 246, 0.4);
     }
 
-    /* チャットエリア */
     .chat-area {
       flex: 1;
       overflow-y: auto;
@@ -94,11 +93,19 @@
       flex-direction: column;
       gap: 16px;
     }
-    .msg-group { display: flex; flex-direction: column; gap: 4px; max-width: 82%; }
+    .msg-group { display: flex; flex-direction: column; gap: 4px; max-width: 85%; position: relative; }
     .msg-group.user { align-self: flex-end; align-items: flex-end; }
     .msg-group.ai { align-self: flex-start; align-items: flex-start; }
     .msg-sender { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
     
+    .msg-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .msg-group.user .msg-wrapper { flex-direction: row-reverse; }
+
     .msg-bubble {
       padding: 10px 14px;
       border-radius: 18px;
@@ -106,6 +113,7 @@
       line-height: 1.5;
       word-break: break-word;
       white-space: pre-wrap;
+      position: relative;
     }
     .msg-group.user .msg-bubble {
       background-color: var(--msg-user);
@@ -118,8 +126,40 @@
       border-bottom-left-radius: 4px;
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
+    .msg-group.error .msg-bubble {
+      background-color: var(--msg-error);
+      color: #fca5a5;
+      border: 1px solid #7f1d1d;
+    }
 
-    /* 入力中アニメーション */
+    /* 削除ボタン・再試行ボタン */
+    .msg-del-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0.6;
+      padding: 4px;
+      transition: opacity 0.2s, color 0.2s;
+    }
+    .msg-del-btn:hover { opacity: 1; color: var(--danger); }
+
+    .retry-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .retry-btn:hover { background-color: rgba(239, 68, 68, 0.3); }
+
     .typing-box {
       display: flex;
       align-items: center;
@@ -127,8 +167,7 @@
       padding: 12px 16px;
     }
     .typing-dot {
-      width: 6px;
-      height: 6px;
+      width: 6px; height: 6px;
       background-color: var(--text-muted);
       border-radius: 50%;
       animation: bounce 1.4s infinite ease-in-out;
@@ -141,7 +180,6 @@
       40% { transform: scale(1); }
     }
 
-    /* 入力エリア */
     .input-area {
       background-color: var(--bg-input);
       padding: 10px 12px;
@@ -173,7 +211,6 @@
       cursor: not-allowed;
     }
 
-    /* ドロワー/モーダル */
     .modal {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.8);
@@ -195,18 +232,16 @@
       color: #fff; padding: 10px; border-radius: 6px; font-size: 14px;
     }
 
-    /* ★プロンプト＆メモリ入力欄の自動拡大（フォーカス時）★ */
     .expandable-textarea {
       min-height: 90px;
       transition: min-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
     }
     .expandable-textarea:focus {
-      min-height: 250px; /* タップして入力中だけ画面の縦いっぱいに広がるわ！ */
+      min-height: 250px;
       border-color: var(--accent) !important;
       outline: none;
     }
 
-    /* トーク一覧リスト */
     .session-item {
       display: flex;
       justify-content: space-between;
@@ -243,19 +278,13 @@
     <button class="chip-btn" onclick="toggleModal('sessionsModal', true)">🔄 キャラ切替/新規作成</button>
   </div>
 
-  <div class="chat-area" id="chatArea">
-    <div class="msg-group ai">
-      <div class="msg-sender">システム</div>
-      <div class="msg-bubble">左上の「💬」ボタンから新しいキャラを作るか、右上の「⚙️」でAPIキーを設定してね！</div>
-    </div>
-  </div>
+  <div class="chat-area" id="chatArea"></div>
 
   <div class="input-area">
     <textarea id="userInput" rows="1" placeholder="メッセージを入力..."></textarea>
     <button class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
   </div>
 
-  <!-- キャラ・トーク一覧モーダル -->
   <div class="modal" id="sessionsModal">
     <div class="modal-content">
       <h3>💬 キャラ・トーク一覧</h3>
@@ -265,7 +294,6 @@
     </div>
   </div>
 
-  <!-- 設定モーダル -->
   <div class="modal" id="settingsModal">
     <div class="modal-content">
       <h3>⚙️ 現在のキャラ設定</h3>
@@ -293,7 +321,7 @@
 
       <div style="display:flex; gap:8px;">
         <button onclick="saveCurrentSettings()" style="flex:1; background:var(--accent);color:#fff;padding:10px;border:none;border-radius:6px;">保存</button>
-        <button onclick="deleteCurrentSession()" style="background:#ef4444;color:#fff;padding:10px;border:none;border-radius:6px;">削除</button>
+        <button onclick="deleteCurrentSession()" style="background:var(--danger);color:#fff;padding:10px;border:none;border-radius:6px;">削除</button>
       </div>
       <button onclick="toggleModal('settingsModal', false)" style="background:#2c2c2e;color:#fff;padding:10px;border:none;border-radius:6px;">閉じる</button>
     </div>
@@ -303,6 +331,7 @@
 <script>
   let sessions = {};
   let currentSessionId = null;
+  let lastFailedText = null; // エラー時のリトライ用テキスト保持
 
   window.onload = () => {
     document.getElementById('apiKey').value = localStorage.getItem('rp_common_key') || '';
@@ -411,13 +440,40 @@
     document.getElementById(modalId).classList.toggle('active', show);
   }
 
-  function appendMsg(role, text) {
+  function deleteMessage(index) {
+    const session = sessions[currentSessionId];
+    if (!session) return;
+
+    if (confirm('このメッセージを削除しますか？')) {
+      session.history.splice(index, 1);
+      saveSessions();
+      renderChatHistory();
+    }
+  }
+
+  function appendMsg(role, text, index = null, isError = false) {
     const area = document.getElementById('chatArea');
     const div = document.createElement('div');
-    div.className = `msg-group ${role}`;
+    div.className = `msg-group ${role} ${isError ? 'error' : ''}`;
+
+    const senderName = role === 'user' ? 'あなた' : (isError ? 'エラー' : sessions[currentSessionId]?.name || 'キャラ');
+    
+    let deleteBtnHtml = '';
+    if (index !== null) {
+      deleteBtnHtml = `<button class="msg-del-btn" onclick="deleteMessage(${index})" title="メッセージを削除">🗑️</button>`;
+    }
+
+    let retryBtnHtml = '';
+    if (isError && lastFailedText) {
+      retryBtnHtml = `<br><button class="retry-btn" onclick="retryLastMessage()">🔄 再試行する</button>`;
+    }
+
     div.innerHTML = `
-      <div class="msg-sender">${role === 'user' ? 'あなた' : sessions[currentSessionId]?.name || 'キャラ'}</div>
-      <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+      <div class="msg-sender">${senderName}</div>
+      <div class="msg-wrapper">
+        <div class="msg-bubble">${text.replace(/\n/g, '<br>')}${retryBtnHtml}</div>
+        ${deleteBtnHtml}
+      </div>
     `;
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
@@ -468,12 +524,12 @@
       return;
     }
 
-    session.history.forEach(msg => {
-      appendMsg(msg.role === 'user' ? 'user' : 'ai', msg.parts[0].text);
+    session.history.forEach((msg, idx) => {
+      appendMsg(msg.role === 'user' ? 'user' : 'ai', msg.parts[0].text, idx);
     });
   }
 
-  async function sendMessage(textOverride = null) {
+  async function sendMessage(textOverride = null, isRetry = false) {
     const input = document.getElementById('userInput');
     const text = textOverride || input.value.trim();
     const apiKey = document.getElementById('apiKey').value.trim();
@@ -486,11 +542,13 @@
 
     const session = sessions[currentSessionId];
 
-    if (!textOverride) input.value = '';
-    appendMsg('user', text);
-    session.history.push({ role: 'user', parts: [{ text }] });
-    saveSessions();
+    if (!isRetry) {
+      if (!textOverride) input.value = '';
+      session.history.push({ role: 'user', parts: [{ text }] });
+      saveSessions();
+    }
 
+    renderChatHistory();
     showTypingIndicator();
 
     let sysInstruction = (session.sys || '') + "\n\n# 永続記憶\n" + (session.mem || '');
@@ -519,14 +577,21 @@
       }
 
       const reply = candidate.content.parts[0].text;
-      appendMsg('ai', reply);
       session.history.push({ role: 'model', parts: [{ text: reply }] });
       saveSessions();
+      lastFailedText = null;
+      renderChatHistory();
     } catch (e) {
       hideTypingIndicator();
-      appendMsg('ai', '⚠️ エラーが発生しました: ' + e.message);
-      session.history.pop();
-      saveSessions();
+      lastFailedText = text; // エラー時のテキストを保存して再試行可能に
+      appendMsg('ai', '⚠️ エラーが発生しました: ' + e.message, null, true);
+    }
+  }
+
+  function retryLastMessage() {
+    if (lastFailedText) {
+      // 画面上のエラーメッセージを消去して再試行
+      sendMessage(lastFailedText, true);
     }
   }
 
