@@ -1,0 +1,15 @@
+{
+  "name": "ロールプレイチャット",
+  "short_name": "RPチャット",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#1e1e1e",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/134/134937.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
