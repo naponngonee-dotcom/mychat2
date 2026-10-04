@@ -12,12 +12,11 @@
       --bg-input: #1e1e1e;
       --msg-user: #1f65d6;
       --msg-ai: #2a2d32;
-      --msg-error: #3a1c1c;
       --text-main: #e1e1e1;
       --text-muted: #8e8e93;
       --accent: #3b82f6;
-      --danger: #ef4444;
       --border-color: #2c2c2e;
+      --danger: #ef4444;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,6 +41,7 @@
       position: relative;
     }
 
+    /* ヘッダー */
     .header {
       background-color: var(--bg-header);
       padding: 12px 16px;
@@ -61,6 +61,9 @@
     .header-status { font-size: 11px; color: #10b981; transition: color 0.3s; }
     .header-status.typing { color: #f59e0b; }
 
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+
+    /* クイックアクションバー */
     .action-bar {
       background-color: #161a23;
       padding: 8px 12px;
@@ -85,6 +88,7 @@
       border-color: rgba(59, 130, 246, 0.4);
     }
 
+    /* チャットエリア */
     .chat-area {
       flex: 1;
       overflow-y: auto;
@@ -96,15 +100,15 @@
     .msg-group { display: flex; flex-direction: column; gap: 4px; max-width: 85%; position: relative; }
     .msg-group.user { align-self: flex-end; align-items: flex-end; }
     .msg-group.ai { align-self: flex-start; align-items: flex-start; }
-    .msg-sender { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+    .msg-sender { font-size: 11px; color: var(--text-muted); margin-left: 4px; display: flex; gap: 8px; align-items: center; }
     
-    .msg-wrapper {
+    .msg-bubble-wrapper {
       display: flex;
-      align-items: center;
+      align-items: flex-center;
       gap: 6px;
       width: 100%;
     }
-    .msg-group.user .msg-wrapper { flex-direction: row-reverse; }
+    .msg-group.user .msg-bubble-wrapper { flex-direction: row-reverse; }
 
     .msg-bubble {
       padding: 10px 14px;
@@ -113,7 +117,6 @@
       line-height: 1.5;
       word-break: break-word;
       white-space: pre-wrap;
-      position: relative;
     }
     .msg-group.user .msg-bubble {
       background-color: var(--msg-user);
@@ -126,40 +129,19 @@
       border-bottom-left-radius: 4px;
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .msg-group.error .msg-bubble {
-      background-color: var(--msg-error);
-      color: #fca5a5;
-      border: 1px solid #7f1d1d;
-    }
 
-    /* 削除ボタン・再試行ボタン */
-    .msg-del-btn {
+    .btn-msg-action {
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 12px;
       cursor: pointer;
+      font-size: 12px;
       opacity: 0.6;
       padding: 4px;
-      transition: opacity 0.2s, color 0.2s;
     }
-    .msg-del-btn:hover { opacity: 1; color: var(--danger); }
+    .btn-msg-action:hover { opacity: 1; }
 
-    .retry-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      margin-top: 8px;
-      background-color: rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      border-radius: 12px;
-      padding: 4px 10px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .retry-btn:hover { background-color: rgba(239, 68, 68, 0.3); }
-
+    /* 入力中アニメーション */
     .typing-box {
       display: flex;
       align-items: center;
@@ -167,7 +149,8 @@
       padding: 12px 16px;
     }
     .typing-dot {
-      width: 6px; height: 6px;
+      width: 6px;
+      height: 6px;
       background-color: var(--text-muted);
       border-radius: 50%;
       animation: bounce 1.4s infinite ease-in-out;
@@ -180,6 +163,7 @@
       40% { transform: scale(1); }
     }
 
+    /* 入力エリア */
     .input-area {
       background-color: var(--bg-input);
       padding: 10px 12px;
@@ -211,6 +195,7 @@
       cursor: not-allowed;
     }
 
+    /* ドロワー/モーダル */
     .modal {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.8);
@@ -232,17 +217,19 @@
       color: #fff; padding: 10px; border-radius: 6px; font-size: 14px;
     }
 
+    /* プロンプト＆メモリ入力欄の自動拡大 */
     .expandable-textarea {
-      min-height: 90px;
+      min-height: 80px;
       transition: min-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
     }
     .expandable-textarea:focus {
-      min-height: 250px;
+      min-height: 220px;
       border-color: var(--accent) !important;
       outline: none;
     }
 
-    .session-item {
+    /* トーク・プリセット一覧リスト */
+    .session-item, .preset-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -270,21 +257,31 @@
         <div class="header-status" id="modelStatus">gemini-3.8-flash</div>
       </div>
     </div>
-    <button onclick="toggleModal('settingsModal', true)" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">⚙️</button>
+    <div class="header-actions">
+      <button onclick="toggleModal('presetModal', true)" title="プロンプトライブラリ" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">📚</button>
+      <button onclick="toggleModal('settingsModal', true)" title="設定" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">⚙️</button>
+    </div>
   </div>
 
   <div class="action-bar">
     <button class="chip-btn accent" onclick="endDay()">🌙 1日目を終了（概要出力）</button>
+    <button class="chip-btn" onclick="retryLastUserMessage()">🔄 最後の返答を再生成</button>
     <button class="chip-btn" onclick="toggleModal('sessionsModal', true)">🔄 キャラ切替/新規作成</button>
   </div>
 
-  <div class="chat-area" id="chatArea"></div>
+  <div class="chat-area" id="chatArea">
+    <div class="msg-group ai">
+      <div class="msg-sender">システム</div>
+      <div class="msg-bubble">左上の「💬」ボタンから新しいキャラを作るか、右上の「⚙️」でAPIキーを設定してね！</div>
+    </div>
+  </div>
 
   <div class="input-area">
     <textarea id="userInput" rows="1" placeholder="メッセージを入力..."></textarea>
     <button class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
   </div>
 
+  <!-- キャラ・トーク一覧モーダル -->
   <div class="modal" id="sessionsModal">
     <div class="modal-content">
       <h3>💬 キャラ・トーク一覧</h3>
@@ -294,9 +291,26 @@
     </div>
   </div>
 
+  <!-- プロンプトプリセットモーダル -->
+  <div class="modal" id="presetModal">
+    <div class="modal-content">
+      <h3>📚 プロンプト（きゃらぷ）ライブラリ</h3>
+      <div style="font-size:12px; color:var(--text-muted);">保存しておいたキャラ設定を現在のトークに適用できます。</div>
+      
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="newPresetName" placeholder="プリセット名（例：ツンデレ幼馴染）" style="flex:1;">
+        <button onclick="saveCurrentAsPreset()" style="background:var(--accent);color:#fff;padding:8px 12px;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;">現在の設定を保存</button>
+      </div>
+
+      <div id="presetList" style="display:flex; flex-direction:column; gap:8px; max-height:250px; overflow-y:auto;"></div>
+      <button onclick="toggleModal('presetModal', false)" style="background:#2c2c2e;color:#fff;padding:10px;border:none;border-radius:6px;">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 設定モーダル -->
   <div class="modal" id="settingsModal">
     <div class="modal-content">
-      <h3>⚙️ 現在のキャラ設定</h3>
+      <h3>⚙️ 現在のキャラ・設定</h3>
       <label>Google AI Studio API Key（共通）</label>
       <input type="password" id="apiKey" placeholder="AIzaSy...">
       
@@ -312,6 +326,10 @@
 
       <label>キャラ表示名</label>
       <input type="text" id="sessionName" placeholder="例：ツンデレ幼馴染">
+
+      <!-- ★追加：ユーザー設定項目★ -->
+      <label style="color:#60a5fa; font-weight:bold;">👤 ユーザー設定（あなた側の容姿・立場など） <span style="font-size:10px; color:var(--accent);">※タップで大きく開くわ！</span></label>
+      <textarea id="userPrompt" class="expandable-textarea" placeholder="例：名前：トウマ、男、17歳高校生。幼馴染の隣に住んでいる。少し鈍感。"></textarea>
 
       <label>System Instructions (きゃらぷ＋メタルール) <span style="font-size:10px; color:var(--accent);">※タップで大きく開くわ！</span></label>
       <textarea id="systemPrompt" class="expandable-textarea" placeholder="プロンプトを入力"></textarea>
@@ -330,12 +348,13 @@
 
 <script>
   let sessions = {};
+  let presets = {};
   let currentSessionId = null;
-  let lastFailedText = null; // エラー時のリトライ用テキスト保持
 
   window.onload = () => {
     document.getElementById('apiKey').value = localStorage.getItem('rp_common_key') || '';
     document.getElementById('modelSelect').value = localStorage.getItem('rp_common_model') || 'gemini-3.8-flash';
+    loadPresets();
     loadSessions();
   };
 
@@ -357,6 +376,17 @@
     localStorage.setItem('rp_common_model', document.getElementById('modelSelect').value);
   }
 
+  function loadPresets() {
+    const data = localStorage.getItem('rp_presets');
+    presets = data ? JSON.parse(data) : {};
+    renderPresetList();
+  }
+
+  function savePresets() {
+    localStorage.setItem('rp_presets', JSON.stringify(presets));
+    renderPresetList();
+  }
+
   function createNewSession(name = null) {
     const id = 'session_' + Date.now();
     const charName = name || prompt('新しいキャラの表示名を入力してください:', '新キャラ');
@@ -365,6 +395,7 @@
     sessions[id] = {
       id: id,
       name: charName,
+      userSys: '', // ユーザー設定
       sys: '',
       mem: '',
       history: []
@@ -386,6 +417,7 @@
     document.getElementById('currentTitle').innerText = session.name;
     document.getElementById('currentAvatar').innerText = session.name.substring(0, 2);
     document.getElementById('sessionName').value = session.name;
+    document.getElementById('userPrompt').value = session.userSys || ''; // ユーザー設定のロード
     document.getElementById('systemPrompt').value = session.sys || '';
     document.getElementById('memoryPrompt').value = session.mem || '';
 
@@ -420,6 +452,7 @@
 
     const session = sessions[currentSessionId];
     session.name = document.getElementById('sessionName').value || '無題のキャラ';
+    session.userSys = document.getElementById('userPrompt').value; // ユーザー設定の保存
     session.sys = document.getElementById('systemPrompt').value;
     session.mem = document.getElementById('memoryPrompt').value;
 
@@ -436,43 +469,106 @@
     loadSessions();
   }
 
+  /* プリセット機能 */
+  function saveCurrentAsPreset() {
+    const nameInput = document.getElementById('newPresetName');
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert('プリセット名を入力してください！');
+      return;
+    }
+
+    const sysText = document.getElementById('systemPrompt').value;
+    const userSysText = document.getElementById('userPrompt').value;
+    if (!sysText && !userSysText) {
+      alert('プロンプトまたはユーザー設定を入力した状態で保存してください！');
+      return;
+    }
+
+    const id = 'preset_' + Date.now();
+    presets[id] = { id, name, sys: sysText, userSys: userSysText };
+    savePresets();
+    nameInput.value = '';
+    alert(`プリセット「${name}」を保存しました！`);
+  }
+
+  function applyPreset(id) {
+    const preset = presets[id];
+    if (!preset) return;
+
+    if (confirm(`プリセット「${preset.name}」を現在のキャラに適用しますか？`)) {
+      document.getElementById('systemPrompt').value = preset.sys || '';
+      if (preset.userSys !== undefined) {
+        document.getElementById('userPrompt').value = preset.userSys;
+      }
+      saveCurrentSettings();
+      toggleModal('presetModal', false);
+      alert('プロンプトとユーザー設定を読み込みました！');
+    }
+  }
+
+  function deletePreset(id) {
+    if (!confirm('このプリセットを削除しますか？')) return;
+    delete presets[id];
+    savePresets();
+  }
+
+  function renderPresetList() {
+    const container = document.getElementById('presetList');
+    container.innerHTML = '';
+
+    const keys = Object.keys(presets);
+    if (keys.length === 0) {
+      container.innerHTML = '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:12px;">保存されたプリセットはありません</div>';
+      return;
+    }
+
+    keys.forEach(id => {
+      const p = presets[id];
+      const div = document.createElement('div');
+      div.className = 'preset-item';
+      div.innerHTML = `
+        <div style="flex:1;" onclick="applyPreset('${p.id}')">
+          <strong>${p.name}</strong>
+          <div style="font-size:11px; color:#8e8e93; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ${p.sys || p.userSys || '空のプロンプト'}
+          </div>
+        </div>
+        <button onclick="deletePreset('${p.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:14px;">🗑️</button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
   function toggleModal(modalId, show) {
     document.getElementById(modalId).classList.toggle('active', show);
   }
 
   function deleteMessage(index) {
+    if (!confirm('このメッセージを削除しますか？')) return;
     const session = sessions[currentSessionId];
-    if (!session) return;
-
-    if (confirm('このメッセージを削除しますか？')) {
-      session.history.splice(index, 1);
-      saveSessions();
-      renderChatHistory();
-    }
+    session.history.splice(index, 1);
+    saveSessions();
+    renderChatHistory();
   }
 
-  function appendMsg(role, text, index = null, isError = false) {
+  function appendMsg(role, text, index = null) {
     const area = document.getElementById('chatArea');
     const div = document.createElement('div');
-    div.className = `msg-group ${role} ${isError ? 'error' : ''}`;
+    div.className = `msg-group ${role}`;
 
-    const senderName = role === 'user' ? 'あなた' : (isError ? 'エラー' : sessions[currentSessionId]?.name || 'キャラ');
-    
-    let deleteBtnHtml = '';
+    let actionBtns = '';
     if (index !== null) {
-      deleteBtnHtml = `<button class="msg-del-btn" onclick="deleteMessage(${index})" title="メッセージを削除">🗑️</button>`;
-    }
-
-    let retryBtnHtml = '';
-    if (isError && lastFailedText) {
-      retryBtnHtml = `<br><button class="retry-btn" onclick="retryLastMessage()">🔄 再試行する</button>`;
+      actionBtns = `<button class="btn-msg-action" onclick="deleteMessage(${index})" title="メッセージを削除">🗑️</button>`;
     }
 
     div.innerHTML = `
-      <div class="msg-sender">${senderName}</div>
-      <div class="msg-wrapper">
-        <div class="msg-bubble">${text.replace(/\n/g, '<br>')}${retryBtnHtml}</div>
-        ${deleteBtnHtml}
+      <div class="msg-sender">
+        <span>${role === 'user' ? 'あなた' : sessions[currentSessionId]?.name || 'キャラ'}</span>
+        ${actionBtns}
+      </div>
+      <div class="msg-bubble-wrapper">
+        <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
       </div>
     `;
     area.appendChild(div);
@@ -529,7 +625,7 @@
     });
   }
 
-  async function sendMessage(textOverride = null, isRetry = false) {
+  async function sendMessage(textOverride = null) {
     const input = document.getElementById('userInput');
     const text = textOverride || input.value.trim();
     const apiKey = document.getElementById('apiKey').value.trim();
@@ -542,16 +638,24 @@
 
     const session = sessions[currentSessionId];
 
-    if (!isRetry) {
-      if (!textOverride) input.value = '';
+    if (!textOverride) input.value = '';
+    
+    if (!textOverride) {
       session.history.push({ role: 'user', parts: [{ text }] });
       saveSessions();
+      renderChatHistory();
     }
 
-    renderChatHistory();
     showTypingIndicator();
 
-    let sysInstruction = (session.sys || '') + "\n\n# 永続記憶\n" + (session.mem || '');
+    // ★組み込み処理：システムプロンプト ＋ ユーザー設定 ＋ 永続記憶 を結合★
+    let sysInstruction = session.sys || '';
+    if (session.userSys && session.userSys.trim()) {
+      sysInstruction += "\n\n# ユーザー（あなた）の設定\n" + session.userSys.trim();
+    }
+    if (session.mem && session.mem.trim()) {
+      sysInstruction += "\n\n# 永続記憶（過去の出来事・要約）\n" + session.mem.trim();
+    }
 
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`, {
@@ -579,19 +683,30 @@
       const reply = candidate.content.parts[0].text;
       session.history.push({ role: 'model', parts: [{ text: reply }] });
       saveSessions();
-      lastFailedText = null;
       renderChatHistory();
     } catch (e) {
       hideTypingIndicator();
-      lastFailedText = text; // エラー時のテキストを保存して再試行可能に
-      appendMsg('ai', '⚠️ エラーが発生しました: ' + e.message, null, true);
+      alert('⚠️ エラーが発生しました: ' + e.message);
+      saveSessions();
+      renderChatHistory();
     }
   }
 
-  function retryLastMessage() {
-    if (lastFailedText) {
-      // 画面上のエラーメッセージを消去して再試行
-      sendMessage(lastFailedText, true);
+  function retryLastUserMessage() {
+    const session = sessions[currentSessionId];
+    if (!session || session.history.length === 0) return;
+
+    if (session.history[session.history.length - 1].role === 'model') {
+      session.history.pop();
+    }
+
+    if (session.history.length > 0 && session.history[session.history.length - 1].role === 'user') {
+      const lastText = session.history[session.history.length - 1].parts[0].text;
+      saveSessions();
+      renderChatHistory();
+      sendMessage(lastText);
+    } else {
+      alert('再生成できるメッセージがありません。');
     }
   }
 
