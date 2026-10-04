@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>マルチキャラ ロールプレイチャット</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <style>
     :root {
       --bg-dark: #121212;
@@ -328,19 +330,17 @@
       <label>キャラ表示名</label>
       <input type="text" id="sessionName" placeholder="例：ツンデレ幼馴染">
 
-      <!-- ★追加：ユーザー設定項目★ -->
-      <label style="color:#60a5fa; font-weight:bold;">👤 ユーザー設定（あなた側の容姿・立場など） <span style="font-size:10px; color:var(--accent);">※タップで大きく開くわ！</span></label>
+      <label style="color:#60a5fa; font-weight:bold;">👤 ユーザー設定（あなた側の容姿・立場など） <span style="font-size:10px; color:var(--accent);">※タップで拡大</span></label>
       <textarea id="userPrompt" class="expandable-textarea" placeholder="例：名前：トウマ、男、17歳高校生。幼馴染の隣に住んでいる。少し鈍感。"></textarea>
 
-      <label>System Instructions (きゃらぷ＋メタルール) <span style="font-size:10px; color:var(--accent);">※タップで大きく開くわ！</span></label>
+      <label>System Instructions (きゃらぷ＋メタルール) <span style="font-size:10px; color:var(--accent);">※タップで拡大</span></label>
       <textarea id="systemPrompt" class="expandable-textarea" placeholder="プロンプトを入力"></textarea>
 
-      <label>永続記憶（メモリ枠・過去の概要など） <span style="font-size:10px; color:var(--accent);">※タップで大きく開くわ！</span></label>
+      <label>永続記憶（メモリ枠・過去の概要など） <span style="font-size:10px; color:var(--accent);">※タップで拡大</span></label>
       <textarea id="memoryPrompt" class="expandable-textarea" placeholder="記憶ノートを入力"></textarea>
 
       <div style="display:flex; gap:8px;">
         <button onclick="saveCurrentSettings()" style="flex:1; background:var(--accent);color:#fff;padding:10px;border:none;border-radius:6px;">保存</button>
-        <button onclick="deleteCurrentSession()" style="background:var(--danger);color:#fff;padding:10px;border:none;border-radius:6px;">削除</button>
       </div>
       <button onclick="toggleModal('settingsModal', false)" style="background:#2c2c2e;color:#fff;padding:10px;border:none;border-radius:6px;">閉じる</button>
     </div>
@@ -396,7 +396,7 @@
     sessions[id] = {
       id: id,
       name: charName,
-      userSys: '', // ユーザー設定
+      userSys: '',
       sys: '',
       mem: '',
       history: []
@@ -418,7 +418,7 @@
     document.getElementById('currentTitle').innerText = session.name;
     document.getElementById('currentAvatar').innerText = session.name.substring(0, 2);
     document.getElementById('sessionName').value = session.name;
-    document.getElementById('userPrompt').value = session.userSys || ''; // ユーザー設定のロード
+    document.getElementById('userPrompt').value = session.userSys || '';
     document.getElementById('systemPrompt').value = session.sys || '';
     document.getElementById('memoryPrompt').value = session.mem || '';
 
@@ -433,19 +433,40 @@
     Object.values(sessions).forEach(s => {
       const div = document.createElement('div');
       div.className = `session-item ${s.id === currentSessionId ? 'active' : ''}`;
-      div.innerHTML = `
-        <div>
-          <strong>${s.name}</strong>
-          <div style="font-size:11px; color:#8e8e93;">メッセージ: ${s.history.length}件</div>
-        </div>
-        <span style="font-size:12px; color:#3b82f6;">${s.id === currentSessionId ? '選択中' : '切り替え'}</span>
-      `;
-      div.onclick = () => {
+      // ★修正：トーク切り替え部分と、削除ボタンを分離
+      div.onclick = (e) => {
+        if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return; 
         switchSession(s.id);
         toggleModal('sessionsModal', false);
       };
+      
+      div.innerHTML = `
+        <div style="flex:1;">
+          <strong>${s.name}</strong>
+          <div style="font-size:11px; color:#8e8e93;">メッセージ: ${s.history.length}件</div>
+        </div>
+        <button onclick="deleteSessionFromList('${s.id}')" title="トークを削除" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:18px; padding:8px;">🗑️</button>
+      `;
       container.appendChild(div);
     });
+  }
+
+  /* トーク一覧から直接トークを削除する機能 */
+  function deleteSessionFromList(id) {
+    const sessionName = sessions[id].name;
+    if (!confirm(`トーク「${sessionName}」を完全に削除しますか？`)) return;
+    
+    delete sessions[id];
+    saveSessions();
+    
+    const remainingIds = Object.keys(sessions);
+    if (remainingIds.length === 0) {
+      createNewSession('デフォルトキャラ');
+    } else if (id === currentSessionId) {
+      switchSession(remainingIds[0]);
+    } else {
+      renderSessionList();
+    }
   }
 
   function saveCurrentSettings() {
@@ -453,21 +474,13 @@
 
     const session = sessions[currentSessionId];
     session.name = document.getElementById('sessionName').value || '無題のキャラ';
-    session.userSys = document.getElementById('userPrompt').value; // ユーザー設定の保存
+    session.userSys = document.getElementById('userPrompt').value;
     session.sys = document.getElementById('systemPrompt').value;
     session.mem = document.getElementById('memoryPrompt').value;
 
     saveSessions();
     switchSession(currentSessionId);
     toggleModal('settingsModal', false);
-  }
-
-  function deleteCurrentSession() {
-    if (!confirm('このキャラの履歴と設定を完全に削除しますか？')) return;
-    delete sessions[currentSessionId];
-    saveSessions();
-    toggleModal('settingsModal', false);
-    loadSessions();
   }
 
   /* プリセット機能 */
@@ -639,17 +652,15 @@
 
     const session = sessions[currentSessionId];
 
-    if (!textOverride) input.value = '';
+    // ★修正：「テキスト入力」でも「ボタンからの特殊送信」でも、必ず履歴に追加してからAPIを叩く
+    if (!textOverride) input.value = ''; // 通常入力の時だけ入力欄を空にする
     
-    if (!textOverride) {
-      session.history.push({ role: 'user', parts: [{ text }] });
-      saveSessions();
-      renderChatHistory();
-    }
+    session.history.push({ role: 'user', parts: [{ text }] });
+    saveSessions();
+    renderChatHistory();
 
     showTypingIndicator();
 
-    // ★組み込み処理：システムプロンプト ＋ ユーザー設定 ＋ 永続記憶 を結合★
     let sysInstruction = session.sys || '';
     if (session.userSys && session.userSys.trim()) {
       sysInstruction += "\n\n# ユーザー（あなた）の設定\n" + session.userSys.trim();
@@ -703,8 +714,12 @@
 
     if (session.history.length > 0 && session.history[session.history.length - 1].role === 'user') {
       const lastText = session.history[session.history.length - 1].parts[0].text;
+      
+      // 再生する前に最後のユーザー発言を履歴から一度抜く（sendMessage内で再追加されるため）
+      session.history.pop();
       saveSessions();
       renderChatHistory();
+      
       sendMessage(lastText);
     } else {
       alert('再生成できるメッセージがありません。');
@@ -712,6 +727,7 @@
   }
 
   function endDay() {
+    // 概要出力ボタン。テキストオーバーライドとして送信する
     sendMessage('（1日目を終了します。締めくくりのセリフと、概要ノートを出力してください）');
   }
 </script>
